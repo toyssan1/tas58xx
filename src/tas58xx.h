@@ -57,6 +57,11 @@ class Tas58xx {
   bool applyMinimalInit();
   bool clearFaults();
   bool readFaults(FaultStatus &faults) const;
+  uint32_t timesFaultsCleared() const;
+
+  static bool hasClockFault(const FaultStatus &faults);
+  static bool hasNonClockFault(const FaultStatus &faults);
+  static bool hasAnyFault(const FaultStatus &faults, bool include_clock_fault = true);
 
   bool setVolume(float level_0_to_1);
   bool setVolumeRaw(uint8_t raw_volume);
@@ -87,4 +92,5 @@ class Tas58xx {
 
   TwoWire *wire_{nullptr};
   uint8_t i2c_addr_{0x4C};
+  uint32_t times_faults_cleared_{0};
 };

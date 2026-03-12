@@ -61,7 +61,12 @@ bool Tas58xx::applyMinimalInit() {
 }
 
 bool Tas58xx::clearFaults() {
-  return this->writeRegister(TAS58XX_FAULT_CLEAR, TAS58XX_ANALOG_FAULT_CLEAR);
+  if (!this->writeRegister(TAS58XX_FAULT_CLEAR, TAS58XX_ANALOG_FAULT_CLEAR)) {
+    return false;
+  }
+
+  this->times_faults_cleared_++;
+  return true;
 }
 
 bool Tas58xx::readFaults(FaultStatus &faults) const {
@@ -75,6 +80,27 @@ bool Tas58xx::readFaults(FaultStatus &faults) const {
   faults.global_fault2 = data[2];
   faults.ot_warning = data[3];
   return true;
+}
+
+uint32_t Tas58xx::timesFaultsCleared() const {
+  return this->times_faults_cleared_;
+}
+
+bool Tas58xx::hasClockFault(const FaultStatus &faults) {
+  return (faults.global_fault1 & (1 << 2)) != 0;
+}
+
+bool Tas58xx::hasNonClockFault(const FaultStatus &faults) {
+  static constexpr uint8_t kRemoveClockFaultMask = 0xFB;
+  return faults.channel_fault != 0 || (faults.global_fault1 & kRemoveClockFaultMask) != 0 || faults.global_fault2 != 0 || faults.ot_warning != 0;
+}
+
+bool Tas58xx::hasAnyFault(const FaultStatus &faults, bool include_clock_fault) {
+  if (hasNonClockFault(faults)) {
+    return true;
+  }
+
+  return include_clock_fault && hasClockFault(faults);
 }
 
 bool Tas58xx::setVolume(float level_0_to_1) {
