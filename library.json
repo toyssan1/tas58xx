@@ -1,0 +1,8 @@
+{
+  "name": "tas58xx",
+  "version": "0.1.0",
+  "description": "Arduino/PlatformIO TAS58xx driver with EQ, presets, mixer, and volume control",
+  "build": {
+    "srcDir": "src"
+  }
+}
